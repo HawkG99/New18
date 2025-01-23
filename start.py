@@ -441,7 +441,12 @@ def initialize_bot(bot, bot_id):
             time.sleep(1)
         if chat_id in Attack and Attack[chat_id] is not None:
             response = f"☣️BGMI D-DoS Attack Finished.\n\nTarget: {target} Port: {port} Time: {attack_time} Seconds\n\n👛Dm to Buy : {owner_name}"
-            bot.reply_to(message, response)
+            bot.reply_to(message, response) 
+        if bot.attack_in_progress:
+            bot.send_message(chat_id, "*⚠️ Please wait!*\n"  # Busy message
+                                       "*The bot is busy with another attack.*\n"  # Current attack message
+                                       "*Check remaining time with the /when command.*", bot.reply_to(message, response)
+            
     
     @bot.callback_query_handler(func=lambda call: call.data.startswith("stop_attack_"))
     def handle_callback_query(call):
@@ -495,7 +500,25 @@ def initialize_bot(bot, bot_id):
         user_name = message.from_user.first_name
         owner_name = get_owner_name(bot_id)
         response = f'''Please Follow These Rules ❗:\n\n1. We are not responsible for any D-DoS attacks, send by our bot. This bot is only for educational purpose and it's source code freely available in github.!!\n2. D-DoS Attacks will expose your IP Address to the Attacking server. so do it with your own risk. \n3. The power of D-DoS is enough to down any game's server. So kindly don't use it to down a website server..!!\n\nFor more : {owner_name}'''
-        bot.reply_to(message, response)
+        bot.reply_to(message, response) 
+
+    @bot.message_handler(commands=['when'])
+    def when_command(message):
+    chat_id = message.chat.id
+    if bot.attack_in_progress:
+        elapsed_time = time.time() - bot.attack_start_time  # Calculate elapsed time
+        remaining_time = bot.attack_duration - elapsed_time  # Calculate remaining time
+
+        if remaining_time > 0:
+            bot.send_message(chat_id, f"*⏳ Time Remaining: {int(remaining_time)} seconds...*\n"
+                                       "*🔍 Hold tight, the action is still unfolding!*\n"
+                                       "*💪 Stay tuned for updates!*", bot.reply_to(message, response)
+        else:
+            bot.send_message(chat_id, "*🎉 The attack has successfully completed!*\n"
+                                       "*🚀 You can now launch your own attack and showcase your skills!*", bot.reply_to(message, response)
+    else:
+        bot.send_message(chat_id, "*❌ No attack is currently in progress!*\n"
+                                   "*🔄 Feel free to initiate your attack whenever you're ready!*", bot.reply_to(message, response)
     
     @bot.message_handler(commands=['plan'])
     def welcome_plan(message):
